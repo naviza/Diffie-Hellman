@@ -1,0 +1,94 @@
+Name: Hudson Shykowski & Dale Richmond Naviza
+ID : 1534579 & 1520045
+CMPUT 274, Fall 2018
+Assignment 2: Encrypted Arduino (Part 1)
+
+Included Files:
+- diffie_hellman_prelim.cpp
+- Makefile
+- read_int.cpp
+- read_int.h
+- README
+
+MATERIALS
+ - Arduino MEGA
+ - Wires
+ - USB Cable
+ - a Computer
+
+WIRING INSTRUCTIONS
+ - Connect the grounds of the 2 arduino. Connect the users TX3 to the other arduino's RX3
+
+    Wiring Scheme
+        Arduino A Ground <---> Arduino B Ground
+        Arduino A RX3 <---> Arduino B TX3
+        Arduino A TX3 <---> Arduino B RX3
+
+CODE INSTRUCTIONS
+1. Connect the arduino to the PC using the USB cable and ensure the arduino is using the proper serial port
+2. Run the code by copying a given makefile in the VM. This makefile is in the tar file so this part can be skipped.
+    a. The makefile can be copied by entering the following into the terminal;
+    $ cp ~/arduino-ua/Makefile_Example .
+3. type in the following to compile and upload the code
+    a. $ make
+    b. $ make upload
+4. when the code is uploaded to the Arduino, enter
+    $ serial-mon
+    into the terminal to run the code on the arduino. Follow the instructions given by the program on the serial monitor.
+
+ASSUMPTIONS
+1. The two users are not going to type at the same time which will prevent the characters on the serial monitor from overwriting each other.
+2. backspaces are not specifically handled; they just move the cursor back which enables the user to overwrite a character on the screeen
+3. only ascii characters will be handled.
+4. read_int.cpp has been added as presented by Dr.Kube in class. It has been slightly modified so that it displays the digits as the user types.
+
+FUNCTIONS
+1.setup()
+  sets up the gen_pin as an input and initializes the 2 serial ports to be used by the code. It flushed both ports to ensure that the buffer is cleared before the user enters anything.
+
+    Inputs : none.
+    Outputs : none.
+
+2. powMod(uint32_t a, uint32_t b, uint32_t m)
+    Performs the operation:
+        (a^b) mod m
+
+    Inputs: a, b, m - 32 bit, unsigned integers
+    Output : result - the (uint32_t) value calculated by the operation
+
+3. gen_key(int bits)
+    For each index in the length, write a bit to the key from the gen_pin (analog pin connected to nothing for randomness). It does so by reading a random integer from gen_pin. This integer is converted to binary and the random bit to the least significant bit of the key.
+
+    Input: bits - how many bits the key is supposed to be
+    Outputs : none.
+
+4. diffieHellman()
+    - Prompt the user to enter the other arduino's public key
+    - Wait until the other other arduino's public key is entered and return key is pressed before continuing
+
+        Inputs : none.
+        Outputs: sharedSecretKey - the 16 bit key for encrpting and decrypting. uint16_t for Part 1 of the Assignment.
+
+5. send_byte(int byte, int sharedKey)
+    recieves an unencrypted byte from the user and send this to the other arduino using Serial3.write
+
+        Inputs: byte - the unencrypted byte to be sent
+                sharedKey - the key used to encrypt using bitwise XOR
+        Outputs : none.
+
+6. sending_bytes(uint16_t sharedKey)
+    reads an input from the serial-monitor and prints it to the serial-monitor. Encrypts the bytes by calling the user-defined function for every byte
+
+        Inputs: sharedKey - the key used to encrypt using bitwise XOR
+        Outputs : none.
+
+7. recieving_bytes(uint16_t sharedKey)
+    reads a byte from the other arduino (Serial3) and performs bitwise XOR using sharedKey to decrypt a message. This message is then printed on to the user's own serial-monitor.
+
+        Inputs: sharedKey - the key used to encrypt using bitwise XOR
+        Outputs : none.
+
+8. main()
+    Obtains a the key to encrypt and decrypt by calling diffieHellman(). Prints to the user's own serial-monitor and goes through the infinite loop of reading the other arduino's message by calling recieving_bytes() and writing to the other arduino by calling sending_bytes.
+
+        Output - 0; for consistency
